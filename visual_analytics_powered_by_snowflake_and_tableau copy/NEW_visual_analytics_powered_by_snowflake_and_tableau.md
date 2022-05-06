@@ -1140,7 +1140,89 @@ As always, let’s rename this sheet and save our work before pulling this into 
 
 <!-- ------------------------ -->
 
-## 8. Create a New Dashboard
+
+## 9. Build a Simple Dashboard
+
+We’re done! We can finally publish our dashboard! This time, rather than clicking the blue “Publish” button, click into the drop-down menu within the blue “Publish” button and select “Publish As...”
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+* Title: “CitiBike Trips & Stations Dashboard”
+* Location: Default
+
+Click “Publish” in the bottom left corner.
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+Once the dashboard is been published, your end users can login to Tableau Online and access the report. Or, if you have a web-based application or customer portal, you can embed the dashboard quickly and easily using the auto-generated embed code.
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+<!-- ------------------------ -->
+
+<!-- ------------------------ -->
+
+## 10. Add Filter Action
+
+We’re done! We can finally publish our dashboard! This time, rather than clicking the blue “Publish” button, click into the drop-down menu within the blue “Publish” button and select “Publish As...”
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+* Title: “CitiBike Trips & Stations Dashboard”
+* Location: Default
+
+Click “Publish” in the bottom left corner.
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+Once the dashboard is been published, your end users can login to Tableau Online and access the report. Or, if you have a web-based application or customer portal, you can embed the dashboard quickly and easily using the auto-generated embed code.
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+<!-- ------------------------ -->
+
+<!-- ------------------------ -->
+
+## 11. Publish and Share Dashboard
+
+We’re done! We can finally publish our dashboard! This time, rather than clicking the blue “Publish” button, click into the drop-down menu within the blue “Publish” button and select “Publish As...”
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+* Title: “CitiBike Trips & Stations Dashboard”
+* Location: Default
+
+Click “Publish” in the bottom left corner.
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+Once the dashboard is been published, your end users can login to Tableau Online and access the report. Or, if you have a web-based application or customer portal, you can embed the dashboard quickly and easily using the auto-generated embed code.
+
+![Apply DS Filters](assets/Tab_100.png)
+
+<br>
+
+<!-- ------------------------ -->
+
+<!-- ------------------------ -->
+
+## 8. Optional: Create a New Dashboard with Optional Formatting
 
 Now we can build a dashboard! Click the middle icon on the bottom banner. In other words, click the icon directly to the left of the “New Worksheet” icon we’ve used three times so far. Or, alternatively, hover over the “Dashboard” tab in the top toolbar (next to “Analysis”) and click New Dashboard. 
 
@@ -1209,7 +1291,7 @@ Now we can add our sheets!
 
 <!-- ------------------------ -->
 
-## 9. Add Worksheets to a Dashboard
+## 9. Optional: Drag the Worksheets into the Dashboard
 
 ### KPIs
 
@@ -1276,7 +1358,7 @@ We’ve added all of the necessary components to our dashboard!
 
 <!-- ------------------------ -->
 
-## 10. Add Dashboard Actions
+## 10. Optional: Add Dashboard Actions
 
 Remember when I said sheets are chapters, and dashboards are the full book? We can finally make our sheets interact with one another and tell a story. 
 
@@ -1296,7 +1378,7 @@ Let’s click the blue “Publish” button to save our work before going any fu
 
 <!-- ------------------------ -->
 
-## 11. Format Dashboard Background
+## 11. Optional: Format Dashboard Background
 
 Now, I know what your thinking... “Why does this dashboard look so.. weird?”. Answer: We haven’t done any formatting! Let’s get started.
 
@@ -1338,7 +1420,7 @@ Next, click into any of the icons within the “Outer Padding” section. Change
 
 <!-- ------------------------ -->
 
-## 12. Format Dashboard Title
+## 12. Optional: Format Dashboard Title
 
 Now, within the Item Hierarchy section of the "Layout" pane, select the text object (denoted with an “A” icon) containing our title. 
 
@@ -1385,7 +1467,7 @@ What an improvement!
 
 <!-- ------------------------ -->
 
-## 13. Format “KPI” Worksheet for Dashboard
+## 13. Optional: Format “KPI” Worksheet for Dashboard
 
 Let’s move on customizing the KPI worksheet for use in our dashboard. Since KPIs are pretty self-explanatory, we don’t really need the worksheet title on the dashboard; it’s just taking up valuable real estate. 
 
@@ -1471,7 +1553,7 @@ Within the “Layout” pane, make the following adjustments:
 
 <!-- ------------------------ -->
 
-## 14. Format “Map” Worksheet for Dashboard
+## 14. Optional: Format “Map” Worksheet for Dashboard
 
 We’re in the home stretch, two more easy objects to go!
 
@@ -1512,7 +1594,7 @@ You’ll notice, we’re using color here as well to make the title and the visu
 
 <!-- ------------------------ -->
 
-## 15. Format “Time” Worksheet for Dashboard
+## 15. Optional: Format “Time” Worksheet for Dashboard
 
 Last but certainly not least, let’s edit our “Time” worksheet object. Within the Dashboard pane under "Sheets", select the Time worksheet object then toggle to the "Layout" pane.
 
