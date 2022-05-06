@@ -640,8 +640,10 @@ As I mentioned, Tooltips can easily be reformatted. Click the Tooltip icon withi
 Within the “Edit Tooltip” window, highlight all of the auto-populated text and delete it. (Don’t worry, it isn’t gone forever, we’re just going to present the information differently).
 
 In the blank window, type or paste:
->“*<AGG(Number of Trips)>* people rode a CitiBike from *<Start Station>* to *<End Station>*. <br>
->On average, this trip took *<AVG(Duration)> minutes* to complete.”
+```
+“*<AGG(Number of Trips)>* people rode a CitiBike from *<Start Station>* to *<End Station>*.
+On average, this trip took *<AVG(Duration)> minutes* to complete.”
+```
 
 Make sure to bold all of the field names before hitting the blue “OK” button at the bottom of the window.
 
@@ -796,9 +798,10 @@ Just like “Duration“, Tableau set the aggregation to sum. To change it to av
 Now, double click where it says “Sheet 1” above the map. This will open a rich text editor.
 
 Delete “Sheet 1” and type or paste:
-
->“CitiBike Bike Rides in <MONTH(Starttime)> (Avg Temp: <AVG(Temp Avg F)> °F) <br>
->The dark gray lines represent *trip* *journeys*, the blue dots represent the *Start Station*, and the orange dots represent the *End Station*. Hover over any line to see the number of trips taken and the average trip time in minutes.“
+```
+CitiBike Bike Rides in <MONTH(Starttime)> (Avg Temp: <AVG(Temp Avg F)> °F) <br>
+The dark gray lines represent *trip* *journeys*, the blue dots represent the *Start Station*, and the orange dots represent the *End Station*. Hover over any line to see the number of trips taken and the average trip time in minutes.
+```
 
 Highlight “CitiBike Bike Rides in <MONTH(Starttime)> (Avg Temp: <AVG(Temp Avg F)> °F)” and change the font size to *20*.
 
