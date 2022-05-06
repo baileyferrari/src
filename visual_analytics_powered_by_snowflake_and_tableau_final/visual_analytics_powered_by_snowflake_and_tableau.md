@@ -5,7 +5,7 @@ categories: Getting Started
 environments: web
 status: Published 
 feedback link: https://github.com/Snowflake-Labs/sfguides/issues
-tags: Getting Started, Data Science, Data Engineering, Twitter 
+tags: Data Visualization, Data Engineering, Embedded Analytics, Data Sharing
 
 # Visual Analytics powered by Snowflake and Tableau
 <!-- ------------------------ -->
@@ -14,10 +14,11 @@ Duration: 90
 
 Join Snowflake and Tableau for an instructor-led hands-on lab to build governed, visual, and interactive analytics quickly and easily. 
 
-The rest of this Snowflake Guide explains the steps of writing your own guide. 
+
 
 ### Prerequisites
 - Familiarity with Snowflake and Tableau
+- Familarity with using an IDE
 
 ### What You’ll Learn 
 - Load unstructured data from IoT enabled bikes into Snowflake.
@@ -25,24 +26,26 @@ The rest of this Snowflake Guide explains the steps of writing your own guide.
 - Use API integration to load geospatial data into Snowflake.
 - Build visual, intuitive, and interactive data visualizations powered by live data in Snowflake.
 - Share production-ready Tableau dashboards by embedding the visualizations into your custom application.
-- Showcase your data in the Snowflake Data Marketplace
+- Showcase your data in the Snowflake Data Marketplace.
 
 ### What You’ll Need 
 - A [Snowflake](https://trial.snowflake.com/) account or free trial
 - A [Tabelau Online](https://www.tableau.com/products/online/request-trial) account or free trial
 - [Visual Studio Code](https://code.visualstudio.com/download) code editor
 - The ["open in browser"](https://marketplace.visualstudio.com/items?itemName=techer.open-in-browser) VS code extension from Visual Studio Marketplace
+- The "Tableau Embedded Portal" folder provided
 
 ### What You’ll Build 
-- Tables within Snowflake
-- A Tableau dashboard
+- Snowflake objects and data share
+- A custom map with advanced spatial data
+- A simple Tableau dashboard, which you'll embed into a portal
 
 <!-- ------------------------ -->
 ## Snowflake Configuration
 Duration: 5
-1. Create a Snowflake Multi-cluster Trial account 
+1. Create a Snowflake enterprise trial account 
 
-2. Login to your Snowflake Trial account
+2. Login to your Snowflake account
 
 3. We will be using the new UI to get started but you can also switch over to the Classic Console if you would like. 
 
@@ -136,6 +139,8 @@ create or replace view vhol_trips_vw
     tripid,
     v:STARTTIME::timestamp_ntz starttime,
     v:ENDTIME::timestamp_ntz endtime,
+    dateadd(year,4,v:STARTTIME::timestamp_ntz) starttime,
+    dateadd(year,4,v:ENDTIME::timestamp_ntz) endtime,
     datediff('minute', starttime, endtime) duration,
     v:START_STATION_ID::integer start_station_id,
     v:END_STATION_ID::integer end_station_id,
@@ -153,14 +158,14 @@ create or replace view vhol_trips_vw
       v:RIDER.PAYMENT.CC_NUM::string) payment_num
   from vhol_trips;
 
--- avg trip duration 
+-- Avg trip duration 
 select date_trunc('hour', starttime) as "date",
 count(*) as "num trips",
 avg(duration)/60 as "avg duration (mins)" 
 from vhol_trips_vw
 group by 1 order by 1;
 
---trips by day
+-- Trips by day
 select
     dayname(starttime) as "day of week",
     count(*) as "num trips"
@@ -184,7 +189,7 @@ drop table vhol_trips_dev;
 
 select count(*) from vhol_trips_dev limit 1;
 
---thank god for resurrection
+-- Thank God for resurrection
 undrop table vhol_trips_dev;
 
 select count(*) from vhol_trips_dev limit 1;
@@ -322,7 +327,7 @@ with gbfs as (
 ### Combine station data with geospatial data
 ``` sql 
 create or replace table vhol_stations as with 
-  -- extract the station data
+  -- Extract the station data
     s as (select 
         v:station_id::number station_id,
         v:region_id::number region_id,
@@ -335,27 +340,27 @@ create or replace table vhol_stations as with
         v:rental_methods rental_methods
     from vhol_spatial_data
     where type = 'station'),
-    -- extract the region data
+    -- Extract the region data
     r as (select
         v:region_id::number region_id,
         v:name::string region_name
     from vhol_spatial_data
     where type = 'region'),
-    -- extract the neighborhood data
+    -- Extract the neighborhood data
     n as (select
         v:properties.neighborhood::string nhood_name,
         v:properties.borough::string borough_name,
         to_geography(v:geometry) nhood_geo
     from vhol_spatial_data
     where type = 'neighborhood')   
--- join it all together using a spatial join
+-- Join it all together using a spatial join
 select station_id, station_name, station_lat, station_lon, station_geo,
   station_type, station_capacity, rental_methods, region_name,
   nhood_name, borough_name, nhood_geo
 from s inner join r on s.region_id = r.region_id
        left outer join n on st_contains(n.nhood_geo, s.station_geo);
 
--- query station data 
+-- Query station data 
 select * from vhol_stations;
 ``` 
 
@@ -397,7 +402,7 @@ create or replace view vhol_trips_stations_weather_vw as (
        left outer join vhol_weather_vw w on date_trunc('day', starttime) = observation_date);
 
 
--- let's query the integrated data view
+-- Let's query the integrated data view
 select * from vhol_trips_stations_vw limit 200;
 select * from vhol_trips_stations_weather_vw limit 200;
 ```
@@ -409,262 +414,16 @@ select * from vhol_trips_stations_weather_vw limit 200;
 <!-- ------------------------ -->
 
 <!-- ------------------------ -->
-## Secure Data Sharing
-```  sql
-create or replace table tenant (
-    tenant_id number,
-    tenant_description string,
-    tenant_account string
-);
-
---add tenant for your account
-insert into tenant values (
-    1, 'My Account', current_account()
-);
-
---select
-select * from tenant;
-
---map tenant to subscribed station beacons
-create or replace table tenant_stations (
-    tenant_id number,
-    station_id number
-);
-
---values
-insert into tenant_stations values
-    (1, 212),
-  (1, 216),
-  (1, 217),
-  (1, 218),
-  (1, 223),
-  (1, 224),
-  (1, 225),
-  (1, 228),
-  (1, 229),
-  (1, 232),
-  (1, 233),
-  (1, 236),
-  (1, 237),
-  (1, 238),
-  (1, 239),
-  (1, 241),
-  (1, 242),
-  (1, 243),
-  (1, 244),
-  (1, 245),
-  (1, 247),
-  (1, 248),
-  (1, 249),
-  (1, 250),
-  (1, 251),
-  (1, 252),
-  (1, 253),
-  (1, 254),
-  (1, 255),
-  (1, 257),
-  (1, 258),
-  (1, 259),
-  (1, 260),
-  (1, 261),
-  (1, 262),
-  (1, 263),
-  (1, 264),
-  (1, 265),
-  (1, 266),
-  (1, 267),
-  (1, 268),
-  (1, 270),
-  (1, 271),
-  (1, 274),
-  (1, 275),
-  (1, 276),
-  (1, 278),
-  (1, 279),
-  (1, 280),
-  (1, 281),
-  (1, 282),
-  (1, 284),
-  (1, 285),
-  (1, 289),
-  (1, 290),
-  (1, 291),
-  (1, 293),
-  (1, 294),
-  (1, 295),
-  (1, 296),
-  (1, 297),
-  (1, 298)
-;
-```
-
-### Enabling Row Level Access Policy 
-``` sql
---select *
-select * from tenant_stations;
-
---select
-set tenant_sv = '1';
-
-select * from vhol_trips_vw
-join tenant_stations
-    on vhol_trips_vw.start_station_id = tenant_stations.station_id
-join tenant
-    on tenant_stations.tenant_id = tenant.tenant_id
-where
-    tenant.tenant_id = $tenant_sv
-limit 100;
-
---select bogus
-set tenant_sv = '0';
-
-select * from vhol_trips_vw
-join tenant_stations
-    on vhol_trips_vw.start_station_id = tenant_stations.station_id
-join tenant
-    on tenant_stations.tenant_id = tenant.tenant_id
-where
-    tenant.tenant_id = $tenant_sv
-limit 100;
-```
-
-### Create Secure Objects to Share 
-``` sql 
---secure view
-create or replace secure view  vhol_trips_secure as
-(select --tripduration, 
- starttime, endtime, start_station_id, bikeid, tenant.tenant_id from vhol_trips_vw
-join tenant_stations
-    on vhol_trips_vw.start_station_id = tenant_stations.station_id
-join tenant
-    on tenant_stations.tenant_id = tenant.tenant_id
-where
-    tenant.tenant_account = current_account());
-
---current account?
-select current_account();
-
---select secure view
-
-select * from vhol_trips_secure limit 100;
-```
-
-### Create Reader Account 
-``` sql
---create a reader account for your tenant
-
-
-CREATE MANAGED ACCOUNT IMP_CLIENT
-    admin_name='USER',
-    admin_password='P@ssword123',
-    type=reader,
-    COMMENT='Testing'; -- Take a note of the Account Name and the URL 
-
---add tenant for your big important client via a reader account
-insert into tenant values (
-    1, 'Big Important Client, Wink Wink', 'IMP_CLIENT'
-);
-
---simulate your tenant
-alter session set simulated_data_sharing_consumer = 'IMP_CLIENT';
-
---select secure view as your tenant
-select * from vhol_trips_secure limit 100;
-
---unsimulate your tenant
-alter session unset simulated_data_sharing_consumer;
-
---are you sure?
-select count(*) from vhol_trips_secure;
-```
-
-### Grant Share Access to Reader 
-``` sql 
---create share and share to reader account
-CREATE OR REPLACE SHARE VHOL_SHARE COMMENT='Creating my Share to Share with my Reader';
-GRANT USAGE ON DATABASE VHOL_DATABASE TO SHARE VHOL_SHARE;
-GRANT USAGE ON SCHEMA VHOL_SCHEMA TO SHARE VHOL_SHARE;
-GRANT SELECT ON VIEW VHOL_TRIPS_SECURE TO SHARE VHOL_SHARE;
-DESC SHARE VHOL_SHARE;
-
-show managed accounts; 
---take note of account_locator
-SELECT "locator" FROM TABLE (result_scan(last_query_id(-1))) WHERE "name" = 'IMP_CLIENT';
---Replace with your locator for 'IMP_CLIENT' from above step
-set account_locator='JPA70732'; 
-ALTER SHARE VHOL_SHARE ADD ACCOUNT = $account_locator;
-SHOW SHARES LIKE 'VHOL_SHARE';
-
--- take note of reader account url with credentials from CREATE MANAGED account statement
-show managed accounts;
-select  $6 as URL FROM table (result_scan(last_query_id())) WHERE "name" = 'IMP_CLIENT';
-```
-
-###
-
-<!-- ------------------------ -->
-
-<!-- ------------------------ -->
-
-## Consumer Access Data
-
-[Download reader_query.sql & Create Worksheet from SQL File](https://github.com/mcnayak/sfquickstarts/blob/master/site/sfguides/src/visual_analytics_powered_by_snowflake_and_tableau/assets/reader_query.sql)
-``` sql
--- create database from share in the reader account  
-CREATE DATABASE TRIPSDB FROM SHARE 
-create or replace warehouse VHOL_READER WITH 
-    WAREHOUSE_SIZE = 'XSMALL' 
-    WAREHOUSE_TYPE = 'STANDARD' 
-    AUTO_SUSPEND = 60 
-    AUTO_RESUME = TRUE 
-    MIN_CLUSTER_COUNT = 1 
-    MAX_CLUSTER_COUNT = 1 
-    SCALING_POLICY = 'STANDARD';
-
-USE DB TRIPSDB
-USE SCHEMA VHOL_SCHEMA; 
-
-SELECT * FROM VHOL_SCHEMA.VHOL_TRIPS_SECURE;
-```
-
-
-[Download reader_query.sql & Create Worksheet from SQL File](https://github.com/mcnayak/sfquickstarts/blob/master/site/sfguides/src/visual_analytics_powered_by_snowflake_and_tableau/assets/reader_query.sql)
-``` sql
--- create database from share in the reader account  
-CREATE DATABASE TRIPSDB FROM SHARE 
-create or replace warehouse VHOL_READER WITH 
-    WAREHOUSE_SIZE = 'XSMALL' 
-    WAREHOUSE_TYPE = 'STANDARD' 
-    AUTO_SUSPEND = 60 
-    AUTO_RESUME = TRUE 
-    MIN_CLUSTER_COUNT = 1 
-    MAX_CLUSTER_COUNT = 1 
-    SCALING_POLICY = 'STANDARD';
-    
-    
-
-USE DB TRIPSDB
-USE SCHEMA VHOL_SCHEMA; 
-
-SELECT * FROM VHOL_SCHEMA.VHOL_TRIPS_SECURE;
-```
-<br>
-
-<!-- ------------------------ -->
-
-<!-- ------------------------ -->
-
-<br>
 
 ## Login to Tableau Online & Connect to Snowflake
 
-Navigate to https://online.tableau.com/ and login to Tableau Online using your login credentials.
+Navigate to https://online.tableau.com/ and login to Tableau Cloud (Online) using your login credentials.
 
 ![A](assets/Tab_1.1.png)
 
 <br>
 
-You will be redirected to the Tableau Online Home page. Within the blue “Welcome to your Tableau site” banner, click into the “New” dropdown and select “Workbook”.
+You will be redirected to the Tableau Cloud (Online) Home page. Within the blue “Welcome to your Tableau site” banner, click into the “New” dropdown and select “Workbook”.
 
 ![A](assets/Tab_1.2.png)
 
@@ -1204,3 +963,251 @@ In this lab we captured semi-structured data coming from NewYork Citibikes, enri
 
 ### Video on the Demo
 [Youtube - Video on the Demo](https://www.youtube.com/watch?v=9zMtimcooxo)
+
+## Optional: Secure Data Sharing
+```  sql
+create or replace table tenant (
+    tenant_id number,
+    tenant_description string,
+    tenant_account string
+);
+
+--add tenant for your account
+insert into tenant values (
+    1, 'My Account', current_account()
+);
+
+--select
+select * from tenant;
+
+--map tenant to subscribed station beacons
+create or replace table tenant_stations (
+    tenant_id number,
+    station_id number
+);
+
+--values
+insert into tenant_stations values
+    (1, 212),
+  (1, 216),
+  (1, 217),
+  (1, 218),
+  (1, 223),
+  (1, 224),
+  (1, 225),
+  (1, 228),
+  (1, 229),
+  (1, 232),
+  (1, 233),
+  (1, 236),
+  (1, 237),
+  (1, 238),
+  (1, 239),
+  (1, 241),
+  (1, 242),
+  (1, 243),
+  (1, 244),
+  (1, 245),
+  (1, 247),
+  (1, 248),
+  (1, 249),
+  (1, 250),
+  (1, 251),
+  (1, 252),
+  (1, 253),
+  (1, 254),
+  (1, 255),
+  (1, 257),
+  (1, 258),
+  (1, 259),
+  (1, 260),
+  (1, 261),
+  (1, 262),
+  (1, 263),
+  (1, 264),
+  (1, 265),
+  (1, 266),
+  (1, 267),
+  (1, 268),
+  (1, 270),
+  (1, 271),
+  (1, 274),
+  (1, 275),
+  (1, 276),
+  (1, 278),
+  (1, 279),
+  (1, 280),
+  (1, 281),
+  (1, 282),
+  (1, 284),
+  (1, 285),
+  (1, 289),
+  (1, 290),
+  (1, 291),
+  (1, 293),
+  (1, 294),
+  (1, 295),
+  (1, 296),
+  (1, 297),
+  (1, 298)
+;
+```
+
+### Optional: Enabling Row Level Access Policy 
+``` sql
+--select *
+select * from tenant_stations;
+
+--select
+set tenant_sv = '1';
+
+select * from vhol_trips_vw
+join tenant_stations
+    on vhol_trips_vw.start_station_id = tenant_stations.station_id
+join tenant
+    on tenant_stations.tenant_id = tenant.tenant_id
+where
+    tenant.tenant_id = $tenant_sv
+limit 100;
+
+--select bogus
+set tenant_sv = '0';
+
+select * from vhol_trips_vw
+join tenant_stations
+    on vhol_trips_vw.start_station_id = tenant_stations.station_id
+join tenant
+    on tenant_stations.tenant_id = tenant.tenant_id
+where
+    tenant.tenant_id = $tenant_sv
+limit 100;
+```
+
+### Optional: Create Secure Objects to Share 
+``` sql 
+--secure view
+create or replace secure view  vhol_trips_secure as
+(select --tripduration, 
+ starttime, endtime, start_station_id, bikeid, tenant.tenant_id from vhol_trips_vw
+join tenant_stations
+    on vhol_trips_vw.start_station_id = tenant_stations.station_id
+join tenant
+    on tenant_stations.tenant_id = tenant.tenant_id
+where
+    tenant.tenant_account = current_account());
+
+--current account?
+select current_account();
+
+--select secure view
+
+select * from vhol_trips_secure limit 100;
+```
+
+### Optional: Create Reader Account 
+``` sql
+--create a reader account for your tenant
+
+
+CREATE MANAGED ACCOUNT IMP_CLIENT
+    admin_name='USER',
+    admin_password='P@ssword123',
+    type=reader,
+    COMMENT='Testing'; -- Take a note of the Account Name and the URL 
+
+--add tenant for your big important client via a reader account
+insert into tenant values (
+    1, 'Big Important Client, Wink Wink', 'IMP_CLIENT'
+);
+
+--simulate your tenant
+alter session set simulated_data_sharing_consumer = 'IMP_CLIENT';
+
+--select secure view as your tenant
+select * from vhol_trips_secure limit 100;
+
+--unsimulate your tenant
+alter session unset simulated_data_sharing_consumer;
+
+--are you sure?
+select count(*) from vhol_trips_secure;
+```
+
+### Grant Share Access to Reader 
+``` sql 
+--create share and share to reader account
+CREATE OR REPLACE SHARE VHOL_SHARE COMMENT='Creating my Share to Share with my Reader';
+GRANT USAGE ON DATABASE VHOL_DATABASE TO SHARE VHOL_SHARE;
+GRANT USAGE ON SCHEMA VHOL_SCHEMA TO SHARE VHOL_SHARE;
+GRANT SELECT ON VIEW VHOL_TRIPS_SECURE TO SHARE VHOL_SHARE;
+DESC SHARE VHOL_SHARE;
+
+show managed accounts; 
+--take note of account_locator
+SELECT "locator" FROM TABLE (result_scan(last_query_id(-1))) WHERE "name" = 'IMP_CLIENT';
+--Replace with your locator for 'IMP_CLIENT' from above step
+set account_locator='JPA70732'; 
+ALTER SHARE VHOL_SHARE ADD ACCOUNT = $account_locator;
+SHOW SHARES LIKE 'VHOL_SHARE';
+
+-- take note of reader account url with credentials from CREATE MANAGED account statement
+show managed accounts;
+select  $6 as URL FROM table (result_scan(last_query_id())) WHERE "name" = 'IMP_CLIENT';
+```
+
+###
+
+<!-- ------------------------ -->
+
+<!-- ------------------------ -->
+
+## Optional: Consumer Access Data
+
+[Download reader_query.sql & Create Worksheet from SQL File](https://github.com/mcnayak/sfquickstarts/blob/master/site/sfguides/src/visual_analytics_powered_by_snowflake_and_tableau/assets/reader_query.sql)
+``` sql
+-- create database from share in the reader account  
+CREATE DATABASE TRIPSDB FROM SHARE 
+create or replace warehouse VHOL_READER WITH 
+    WAREHOUSE_SIZE = 'XSMALL' 
+    WAREHOUSE_TYPE = 'STANDARD' 
+    AUTO_SUSPEND = 60 
+    AUTO_RESUME = TRUE 
+    MIN_CLUSTER_COUNT = 1 
+    MAX_CLUSTER_COUNT = 1 
+    SCALING_POLICY = 'STANDARD';
+
+USE DB TRIPSDB
+USE SCHEMA VHOL_SCHEMA; 
+
+SELECT * FROM VHOL_SCHEMA.VHOL_TRIPS_SECURE;
+```
+
+
+[Download reader_query.sql & Create Worksheet from SQL File](https://github.com/mcnayak/sfquickstarts/blob/master/site/sfguides/src/visual_analytics_powered_by_snowflake_and_tableau/assets/reader_query.sql)
+``` sql
+-- create database from share in the reader account  
+CREATE DATABASE TRIPSDB FROM SHARE 
+create or replace warehouse VHOL_READER WITH 
+    WAREHOUSE_SIZE = 'XSMALL' 
+    WAREHOUSE_TYPE = 'STANDARD' 
+    AUTO_SUSPEND = 60 
+    AUTO_RESUME = TRUE 
+    MIN_CLUSTER_COUNT = 1 
+    MAX_CLUSTER_COUNT = 1 
+    SCALING_POLICY = 'STANDARD';
+    
+    
+
+USE DB TRIPSDB
+USE SCHEMA VHOL_SCHEMA; 
+
+SELECT * FROM VHOL_SCHEMA.VHOL_TRIPS_SECURE;
+```
+<br>
+
+<!-- ------------------------ -->
+
+<!-- ------------------------ -->
+
+<br>
+
